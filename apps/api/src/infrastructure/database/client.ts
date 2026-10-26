@@ -1,4 +1,5 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 import { Pool } from 'pg';
 import * as schema from './schema';
@@ -8,6 +9,8 @@ export type Database = PgDatabase<PgQueryResultHKT, typeof schema>;
 
 export interface DatabaseHandle {
   db: Database;
+  /** Applies pending SQL migrations (idempotent). */
+  migrate(): Promise<void>;
   close(): Promise<void>;
 }
 
@@ -25,8 +28,10 @@ export function createPostgresDatabase(
     connectionTimeoutMillis: 10_000,
     ssl: useTls ? { rejectUnauthorized: false } : undefined,
   });
+  const db = drizzle(pool, { schema });
   return {
-    db: drizzle(pool, { schema }),
+    db,
+    migrate: () => migrate(db, { migrationsFolder: 'drizzle' }),
     close: () => pool.end(),
   };
 }

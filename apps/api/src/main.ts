@@ -4,7 +4,8 @@ import { createPostgresDatabase } from './infrastructure/database/client';
 
 async function main() {
   const config = loadConfig();
-  const { db, close } = createPostgresDatabase(config.databaseUrl, config.isProduction);
+  const { db, migrate, close } = createPostgresDatabase(config.databaseUrl, config.isProduction);
+  await migrate();
   const app = await buildApp({ config, db });
 
   const shutdown = async (signal: string) => {
