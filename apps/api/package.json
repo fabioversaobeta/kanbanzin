@@ -19,7 +19,8 @@
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "dev:pglite": "tsx watch --env-file-if-exists=.env scripts/dev-pglite.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.3",

@@ -11,3 +11,5 @@ coverage/
 .vscode/*
 !.vscode/extensions.json
 *.tsbuildinfo
+.data/
+.claude/
