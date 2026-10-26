@@ -21,7 +21,7 @@ jobs:
         working-directory: apps/api
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -59,7 +59,7 @@ jobs:
       JWT_SECRET: ci-secret-ci-secret-ci-secret-ci-secret
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -85,7 +85,7 @@ jobs:
         working-directory: apps/web
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -103,7 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - name: Audit production dependencies
