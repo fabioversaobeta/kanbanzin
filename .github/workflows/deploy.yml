@@ -1,0 +1,63 @@
+name: Deploy
+
+# Optional continuous deployment driven by GitHub Actions.
+# The default (and simplest) setup is the native Git integration of Railway and Vercel,
+# configured to wait for CI. Enable this workflow instead by creating the repository variable
+# ENABLE_ACTIONS_DEPLOY=true and the secrets listed in docs/deployment.md.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    name: Deploy API to Railway
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      vars.ENABLE_ACTIONS_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    environment: production-api
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deploy
+        working-directory: apps/api
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: npx --yes @railway/cli@latest up --service "${{ vars.RAILWAY_SERVICE }}" --ci
+
+  web:
+    name: Deploy web to Vercel
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      vars.ENABLE_ACTIONS_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    environment: production-web
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pull Vercel environment
+        working-directory: apps/web
+        run: npx --yes vercel@latest pull --yes --environment=production --token "${{ secrets.VERCEL_TOKEN }}"
+      - name: Build
+        working-directory: apps/web
+        run: npx --yes vercel@latest build --prod --token "${{ secrets.VERCEL_TOKEN }}"
+      - name: Deploy
+        working-directory: apps/web
+        run: npx --yes vercel@latest deploy --prebuilt --prod --token "${{ secrets.VERCEL_TOKEN }}"
