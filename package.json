@@ -1,0 +1,12 @@
+{
+  "name": "kanbanzin",
+  "private": true,
+  "description": "Kanbanzin monorepo: Trello-like Kanban boards (Node.js API + React web app).",
+  "scripts": {
+    "install:all": "npm ci --prefix apps/api && npm ci --prefix apps/web",
+    "lint": "npm run lint --prefix apps/api && npm run lint --prefix apps/web",
+    "typecheck": "npm run typecheck --prefix apps/api && npm run typecheck --prefix apps/web",
+    "test": "npm test --prefix apps/api && npm test --prefix apps/web",
+    "build": "npm run build --prefix apps/api && npm run build --prefix apps/web"
+  }
+}
