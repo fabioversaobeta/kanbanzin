@@ -108,7 +108,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   app.get('/health', async () => ({ status: 'ok' }));
   app.get('/health/ready', async (_request, reply) => {
     try {
-      await db.execute(sql`select 1`);
+      await db.execute(sql`select 1 from users limit 1`);
       return { status: 'ready' };
     } catch (error) {
       app.log.error({ err: error }, 'Readiness check failed');
