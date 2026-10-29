@@ -229,6 +229,54 @@ describe('boards, lists and cards (integration)', () => {
     });
   });
 
+  describe('archiving the cards of a list', () => {
+    it('clears the list without deleting it and keeps the archived cards in the export', async () => {
+      const board = await createBoard();
+      const todo = await createList(board.id, 'To do');
+      const done = await createList(board.id, 'Done');
+      const first = await createCard(todo.id, 'First');
+      await createCard(todo.id, 'Second');
+      await createCard(done.id, 'Untouched');
+
+      expect((await call(owner, 'POST', `/v1/lists/${todo.id}/archive-cards`)).statusCode).toBe(
+        204,
+      );
+
+      const view = await snapshot(board.id);
+      expect(view.lists.map((l) => [l.title, l.cards.length])).toEqual([
+        ['To do', 0],
+        ['Done', 1],
+      ]);
+      expect((await call(owner, 'PATCH', `/v1/cards/${first.id}`, { title: 'x' })).statusCode).toBe(
+        404,
+      );
+
+      const fresh = await createCard(todo.id, 'After archive');
+      expect((await snapshot(board.id)).lists[0]?.cards.map((c) => c.id)).toEqual([fresh.id]);
+
+      const exported = (await call(owner, 'GET', '/v1/me/export')).json() as {
+        boards: {
+          id: string;
+          lists: { id: string; cards: { title: string; archivedAt: string | null }[] }[];
+        }[];
+      };
+      const exportedCards = exported.boards
+        .find((b) => b.id === board.id)!
+        .lists.find((l) => l.id === todo.id)!.cards;
+      expect(exportedCards.filter((c) => c.archivedAt !== null).map((c) => c.title)).toEqual([
+        'First',
+        'Second',
+      ]);
+    });
+
+    it('is not available to other users', async () => {
+      const board = await createBoard();
+      const list = await createList(board.id, 'Private');
+      const response = await call(stranger, 'POST', `/v1/lists/${list.id}/archive-cards`);
+      expect(response.statusCode).toBe(404);
+    });
+  });
+
   describe('superpowers', () => {
     it('lists the catalog', async () => {
       const response = await call(owner, 'GET', '/v1/superpowers');

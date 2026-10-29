@@ -82,6 +82,7 @@ export const listsApi = {
   move: (id: string, index: number) =>
     request<void>(`/v1/lists/${id}/move`, { method: 'POST', body: { index } }),
   remove: (id: string) => request<void>(`/v1/lists/${id}`, { method: 'DELETE' }),
+  archiveCards: (id: string) => request<void>(`/v1/lists/${id}/archive-cards`, { method: 'POST' }),
 };
 
 export const cardsApi = {

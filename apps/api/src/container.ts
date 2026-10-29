@@ -40,6 +40,7 @@ import {
   UpdateCard,
 } from './modules/boards/application/card-use-cases';
 import {
+  ArchiveListCards,
   CreateList,
   DeleteList,
   MoveList,
@@ -134,6 +135,7 @@ export function createContainer({
       renameList: new RenameList(lists),
       moveList: new MoveList(lists),
       deleteList: new DeleteList(lists),
+      archiveListCards: new ArchiveListCards(lists, cards, clock),
       createCard: new CreateCard(lists, cards, superpowers, clock),
       updateCard: new UpdateCard(cards, superpowers, clock),
       moveCard: new MoveCard(lists, cards, clock),

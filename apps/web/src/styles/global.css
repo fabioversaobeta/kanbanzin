@@ -967,3 +967,48 @@ textarea.input {
     transition-duration: 0.001ms !important;
   }
 }
+
+.list-menu {
+  position: relative;
+  flex: none;
+}
+
+.list-menu-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  min-width: 220px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: default;
+  background: linear-gradient(135deg, rgba(60, 80, 160, 0.9), rgba(60, 50, 140, 0.84));
+}
+
+.list-menu-item {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.list-menu-item:hover:not(:disabled),
+.list-menu-item:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.list-menu-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.list-menu-item.is-danger {
+  color: var(--danger);
+}

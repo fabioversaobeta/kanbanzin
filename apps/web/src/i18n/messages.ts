@@ -89,6 +89,11 @@ export const m = {
     addConfirm: 'Adicionar',
     delete: 'Excluir lista',
     deleteConfirm: 'Excluir esta lista e todos os cartões dela?',
+    menu: 'Opções da lista',
+    archiveCards: 'Arquivar todos os cartões',
+    archiveCardsConfirm:
+      'Arquivar todos os cartões desta lista? Eles saem do quadro, mas a lista é mantida.',
+    archive: 'Arquivar',
     cards: (n: number) => (n === 1 ? '1 cartão' : `${n} cartões`),
   },
 

@@ -53,6 +53,7 @@ export class CreateCard {
       position: placement.position,
       dueAt: null,
       labels: [],
+      archivedAt: null,
       createdAt: now,
       updatedAt: now,
     };

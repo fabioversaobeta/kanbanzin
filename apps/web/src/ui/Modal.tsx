@@ -87,6 +87,8 @@ interface ConfirmDialogProps {
   message: string;
   confirmLabel: string;
   busy?: boolean;
+  /** Styles the confirm button as destructive (default). */
+  danger?: boolean;
   onConfirm(): void;
   onClose(): void;
 }
@@ -96,6 +98,7 @@ export function ConfirmDialog({
   message,
   confirmLabel,
   busy,
+  danger = true,
   onConfirm,
   onClose,
 }: ConfirmDialogProps) {
@@ -106,7 +109,12 @@ export function ConfirmDialog({
         <button type="button" className="btn" onClick={onClose}>
           {m.cancel}
         </button>
-        <button type="button" className="btn btn-danger" disabled={busy} onClick={onConfirm}>
+        <button
+          type="button"
+          className={danger ? 'btn btn-danger' : 'btn btn-primary'}
+          disabled={busy}
+          onClick={onConfirm}
+        >
           {confirmLabel}
         </button>
       </div>
