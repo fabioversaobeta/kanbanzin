@@ -24,6 +24,8 @@ export interface Card {
   position: number;
   dueAt: Date | null;
   labels: string[];
+  /** Archived cards are hidden from the board but kept in the database. */
+  archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

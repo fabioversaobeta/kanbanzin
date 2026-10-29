@@ -70,6 +70,7 @@ export class ExportUserData {
                 description: card.description,
                 dueAt: card.dueAt?.toISOString() ?? null,
                 labels: card.labels,
+                archivedAt: card.archivedAt?.toISOString() ?? null,
                 createdAt: card.createdAt.toISOString(),
               })),
           })),

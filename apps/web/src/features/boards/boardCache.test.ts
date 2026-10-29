@@ -3,6 +3,7 @@ import type { BoardList, BoardView, Card } from '../../api/types';
 import {
   addCard,
   addList,
+  clearListCards,
   findListOfCard,
   moveCardInLists,
   moveListInLists,
@@ -98,6 +99,12 @@ describe('view helpers', () => {
     expect(added.lists.map((l) => l.id)).toEqual(['todo', 'done', 'new']);
     expect(renameList(added, 'new', 'Renamed').lists[2]?.title).toBe('Renamed');
     expect(removeList(added, 'todo').lists.map((l) => l.id)).toEqual(['done', 'new']);
+  });
+
+  it('clears only the cards of the given list', () => {
+    const cleared = clearListCards(base, 'todo');
+    expect(cleared.lists.map((l) => l.cards.length)).toEqual([0, base.lists[1]!.cards.length]);
+    expect(cleared.lists.map((l) => l.id)).toEqual(['todo', 'done']);
   });
 
   it('adds, replaces and removes cards', () => {

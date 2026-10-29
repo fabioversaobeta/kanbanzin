@@ -4,7 +4,7 @@ import { ConflictError, NotFoundError } from '../../../shared/errors';
 import type { BoardList } from '../domain/entities';
 import { placeAt } from '../domain/position';
 import { LIST_TITLE_MAX, MAX_LISTS_PER_BOARD, normalizeTitle } from '../domain/rules';
-import type { BoardRepository, ListRepository } from './ports';
+import type { BoardRepository, CardRepository, ListRepository } from './ports';
 import { presentList, type ListDto } from './presenters';
 
 export class CreateList {
@@ -87,5 +87,20 @@ export class DeleteList {
     const list = await this.lists.findOwned(listId, ownerId);
     if (!list) throw new NotFoundError('List');
     await this.lists.delete(list.id);
+  }
+}
+
+export class ArchiveListCards {
+  constructor(
+    private readonly lists: ListRepository,
+    private readonly cards: CardRepository,
+    private readonly clock: Clock,
+  ) {}
+
+  /** Clears the list without deleting it: its cards are archived and leave the board. */
+  async execute(ownerId: string, listId: string): Promise<void> {
+    const list = await this.lists.findOwned(listId, ownerId);
+    if (!list) throw new NotFoundError('List');
+    await this.cards.archiveByList(list.id, this.clock.now());
   }
 }

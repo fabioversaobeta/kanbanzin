@@ -6,6 +6,7 @@ import { m } from '../../i18n/messages';
 import type { SuperpowerModule } from '../superpowers/registry';
 import { SortableCard } from './CardItem';
 import { Composer } from './Composer';
+import { ListMenu } from './ListMenu';
 
 interface DragHandle {
   ref: Ref<HTMLDivElement>;
@@ -17,12 +18,21 @@ interface ListShellProps {
   handle?: DragHandle;
   onRename?(listId: string, title: string): void;
   onDelete?(listId: string): void;
+  onArchiveCards?(listId: string): void;
   children: ReactNode;
   footer?: ReactNode;
 }
 
 /** Visual shell of a list; shared by the real (sortable) column and the drag overlay. */
-export function ListShell({ list, handle, onRename, onDelete, children, footer }: ListShellProps) {
+export function ListShell({
+  list,
+  handle,
+  onRename,
+  onDelete,
+  onArchiveCards,
+  children,
+  footer,
+}: ListShellProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(list.title);
 
@@ -62,17 +72,24 @@ export function ListShell({ list, handle, onRename, onDelete, children, footer }
         <span className="list-count" aria-label={m.lists.cards(list.cards.length)}>
           {list.cards.length}
         </span>
-        {onDelete ? (
-          <button
-            type="button"
-            className="btn btn-ghost btn-icon btn-small"
-            aria-label={m.lists.delete}
-            title={m.lists.delete}
-            onPointerDown={(event) => event.stopPropagation()}
-            onClick={() => onDelete(list.id)}
-          >
-            🗑
-          </button>
+        {onDelete || onArchiveCards ? (
+          <ListMenu
+            label={m.lists.menu}
+            actions={[
+              ...(onArchiveCards
+                ? [
+                    {
+                      label: m.lists.archiveCards,
+                      disabled: list.cards.length === 0,
+                      onSelect: () => onArchiveCards(list.id),
+                    },
+                  ]
+                : []),
+              ...(onDelete
+                ? [{ label: m.lists.delete, danger: true, onSelect: () => onDelete(list.id) }]
+                : []),
+            ]}
+          />
         ) : null}
       </div>
       <div className="cards">{children}</div>
@@ -86,6 +103,7 @@ interface ListColumnProps {
   modules: readonly SuperpowerModule[];
   onRename(listId: string, title: string): void;
   onDelete(listId: string): void;
+  onArchiveCards(listId: string): void;
   onAddCard(listId: string, title: string): void;
   onOpenCard(cardId: string): void;
 }
@@ -95,6 +113,7 @@ export const ListColumn = memo(function ListColumn({
   modules,
   onRename,
   onDelete,
+  onArchiveCards,
   onAddCard,
   onOpenCard,
 }: ListColumnProps) {
@@ -119,6 +138,7 @@ export const ListColumn = memo(function ListColumn({
         handle={{ ref: setActivatorNodeRef, props: { ...attributes, ...listeners } }}
         onRename={onRename}
         onDelete={onDelete}
+        onArchiveCards={onArchiveCards}
         footer={
           <Composer
             openLabel={m.cards.add}

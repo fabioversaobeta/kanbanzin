@@ -4,6 +4,7 @@ import type { BoardSummary, BoardView, CardUpdate } from '../../api/types';
 import {
   addCard,
   addList,
+  clearListCards,
   moveCardInLists,
   moveListInLists,
   removeCard,
@@ -107,6 +108,12 @@ export function useBoardActions(boardId: string) {
     onError: resync,
   });
 
+  const archiveListCards = useMutation({
+    mutationFn: (id: string) => listsApi.archiveCards(id),
+    onMutate: (id) => optimistic((view) => clearListCards(view, id)),
+    onError: resync,
+  });
+
   const createCard = useMutation({
     mutationFn: (input: { listId: string; title: string }) =>
       cardsApi.create(input.listId, input.title),
@@ -144,6 +151,7 @@ export function useBoardActions(boardId: string) {
     renameList: renameListMutation,
     moveList,
     deleteList,
+    archiveListCards,
     createCard,
     updateCard,
     moveCard,

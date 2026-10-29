@@ -70,6 +70,13 @@ export function removeList(view: BoardView, listId: string): BoardView {
   );
 }
 
+export function clearListCards(view: BoardView, listId: string): BoardView {
+  return mapView(
+    view,
+    view.lists.map((l) => (l.id === listId ? { ...l, cards: [] } : l)),
+  );
+}
+
 export function addCard(view: BoardView, card: Card): BoardView {
   return mapView(
     view,

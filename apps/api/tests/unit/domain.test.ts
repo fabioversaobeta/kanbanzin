@@ -139,6 +139,7 @@ describe('superpowers', () => {
       position: 1,
       dueAt: new Date('2030-01-01T00:00:00Z'),
       labels: ['red'],
+      archivedAt: null,
       createdAt: new Date(0),
       updatedAt: new Date(0),
     };

@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray, ne, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNull, ne, sql } from 'drizzle-orm';
 import type { Database } from '../../../infrastructure/database/client';
 import { boards, cards, lists } from '../../../infrastructure/database/schema';
 import type {
@@ -66,7 +66,11 @@ export class DrizzleBoardContentReader implements BoardContentReader {
   async load(boardId: string): Promise<{ lists: BoardList[]; cards: Card[] }> {
     const [boardLists, boardCards] = await Promise.all([
       this.db.select().from(lists).where(eq(lists.boardId, boardId)).orderBy(asc(lists.position)),
-      this.db.select().from(cards).where(eq(cards.boardId, boardId)).orderBy(asc(cards.position)),
+      this.db
+        .select()
+        .from(cards)
+        .where(and(eq(cards.boardId, boardId), isNull(cards.archivedAt)))
+        .orderBy(asc(cards.position)),
     ]);
     return { lists: boardLists, cards: boardCards };
   }
@@ -134,12 +138,13 @@ export class DrizzleCardRepository implements CardRepository {
         position: cards.position,
         dueAt: cards.dueAt,
         labels: cards.labels,
+        archivedAt: cards.archivedAt,
         createdAt: cards.createdAt,
         updatedAt: cards.updatedAt,
       })
       .from(cards)
       .innerJoin(boards, eq(boards.id, cards.boardId))
-      .where(and(eq(cards.id, cardId), eq(boards.ownerId, ownerId)))
+      .where(and(eq(cards.id, cardId), eq(boards.ownerId, ownerId), isNull(cards.archivedAt)))
       .limit(1);
     return row ?? null;
   }
@@ -150,8 +155,8 @@ export class DrizzleCardRepository implements CardRepository {
       .from(cards)
       .where(
         excludeId
-          ? and(eq(cards.listId, listId), ne(cards.id, excludeId))
-          : eq(cards.listId, listId),
+          ? and(eq(cards.listId, listId), isNull(cards.archivedAt), ne(cards.id, excludeId))
+          : and(eq(cards.listId, listId), isNull(cards.archivedAt)),
       )
       .orderBy(asc(cards.position));
   }
@@ -177,6 +182,15 @@ export class DrizzleCardRepository implements CardRepository {
 
   async delete(id: string): Promise<void> {
     await this.db.delete(cards).where(eq(cards.id, id));
+  }
+
+  async archiveByList(listId: string, at: Date): Promise<number> {
+    const archived = await this.db
+      .update(cards)
+      .set({ archivedAt: at, updatedAt: at })
+      .where(and(eq(cards.listId, listId), isNull(cards.archivedAt)))
+      .returning({ id: cards.id });
+    return archived.length;
   }
 }
 

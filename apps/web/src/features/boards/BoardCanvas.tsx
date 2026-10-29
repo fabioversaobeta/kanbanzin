@@ -77,6 +77,7 @@ export function BoardCanvas({ view, actions, onOpenCard }: BoardCanvasProps) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [active, setActive] = useState<ActiveItem | null>(null);
   const [listToDelete, setListToDelete] = useState<string | null>(null);
+  const [listToArchive, setListToArchive] = useState<string | null>(null);
 
   const lists = draft && draft.base === view.lists ? draft.lists : view.lists;
   const activeCard =
@@ -175,6 +176,7 @@ export function BoardCanvas({ view, actions, onOpenCard }: BoardCanvasProps) {
               modules={modules}
               onRename={(id, title) => actions.renameList.mutate({ id, title })}
               onDelete={setListToDelete}
+              onArchiveCards={setListToArchive}
               onAddCard={(listId, title) => actions.createCard.mutate({ listId, title })}
               onOpenCard={onOpenCard}
             />
@@ -219,6 +221,19 @@ export function BoardCanvas({ view, actions, onOpenCard }: BoardCanvasProps) {
           onConfirm={() => {
             actions.deleteList.mutate(listToDelete);
             setListToDelete(null);
+          }}
+        />
+      ) : null}
+      {listToArchive ? (
+        <ConfirmDialog
+          title={m.lists.archiveCards}
+          message={m.lists.archiveCardsConfirm}
+          confirmLabel={m.lists.archive}
+          danger={false}
+          onClose={() => setListToArchive(null)}
+          onConfirm={() => {
+            actions.archiveListCards.mutate(listToArchive);
+            setListToArchive(null);
           }}
         />
       ) : null}

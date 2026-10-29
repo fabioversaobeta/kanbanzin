@@ -48,6 +48,8 @@ export interface CardRepository {
   move(id: string, listId: string, position: number, at: Date): Promise<void>;
   setPositions(items: readonly PositionedItem[]): Promise<void>;
   delete(id: string): Promise<void>;
+  /** Archives every active card of the list; resolves to how many were archived. */
+  archiveByList(listId: string, at: Date): Promise<number>;
 }
 
 export interface EnabledSuperpowersReader {

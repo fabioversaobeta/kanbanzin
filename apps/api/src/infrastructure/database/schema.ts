@@ -102,6 +102,7 @@ export const cards = pgTable(
     position: doublePrecision('position').notNull(),
     dueAt: timestamptz('due_at'),
     labels: text('labels').array().notNull().default([]),
+    archivedAt: timestamptz('archived_at'),
     createdAt: timestamptz('created_at').notNull().defaultNow(),
     updatedAt: timestamptz('updated_at').notNull().defaultNow(),
   },

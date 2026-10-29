@@ -82,6 +82,12 @@ export function registerBoardRoutes(app: FastifyInstance, container: Container):
     return reply.status(204).send();
   });
 
+  app.post('/v1/lists/:id/archive-cards', protectedRoute, async (request, reply) => {
+    const { id } = idParams.parse(request.params);
+    await boards.archiveListCards.execute(request.userId, id);
+    return reply.status(204).send();
+  });
+
   // Cards
   app.post('/v1/lists/:id/cards', protectedRoute, async (request, reply) => {
     const { id } = idParams.parse(request.params);
