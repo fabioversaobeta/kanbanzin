@@ -18,6 +18,8 @@ to deploy on Railway (API) and Vercel (web).
 - **Superpowers**: plugin-like features enabled per board (included: *Due dates*, *Color labels*);
   the architecture is built so new ones can be added as the product grows
   ([guide](docs/superpowers.md))
+- **MCP server** so agents like Claude Code can manage boards, lists and cards with a personal
+  access token ([guide](docs/mcp.md))
 - **Accounts** with e-mail/password, **password recovery by e-mail through Resend**
 - **LGPD ready**: explicit consent, privacy policy and terms (pt-BR), data export, account erasure
 - **Secure by default**: Argon2id, rotating refresh tokens, CSRF defences, rate limiting, strict

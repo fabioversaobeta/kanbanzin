@@ -10,6 +10,7 @@ import type { Database } from './infrastructure/database/client';
 import { registerAuthRoutes, REFRESH_COOKIE } from './interface/http/auth-routes';
 import { registerBoardRoutes } from './interface/http/board-routes';
 import { registerErrorHandling } from './interface/http/errors';
+import { registerMcpRoutes } from './interface/mcp/mcp-routes';
 import type { Mailer } from './modules/identity/application/ports';
 import type { Clock } from './shared/clock';
 
@@ -122,6 +123,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     limits,
   });
   registerBoardRoutes(app, container);
+  registerMcpRoutes(app, container);
 
   return app;
 }
