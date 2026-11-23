@@ -23,8 +23,19 @@ export function useBoards() {
   return useQuery({ queryKey: keys.boards, queryFn: boardsApi.list });
 }
 
+/** How often an open board re-reads the server, so changes made elsewhere (e.g. by Claude Code
+ *  through the MCP server or session hooks) show up without a reload. */
+export const BOARD_POLL_MS = 5000;
+
 export function useBoard(id: string) {
-  return useQuery({ queryKey: keys.board(id), queryFn: () => boardsApi.get(id) });
+  const client = useQueryClient();
+  return useQuery({
+    queryKey: keys.board(id),
+    queryFn: () => boardsApi.get(id),
+    // Polls only while the tab is visible (the default) and never while the user's own optimistic
+    // changes are still being saved, so a refetch cannot undo them.
+    refetchInterval: () => (client.isMutating() > 0 ? false : BOARD_POLL_MS),
+  });
 }
 
 export function useCreateBoard() {
