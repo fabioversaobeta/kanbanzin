@@ -1,5 +1,14 @@
 import { request, setAccessToken, type SessionPayload } from './http';
-import type { Board, BoardList, BoardSummary, BoardView, Card, CardUpdate, User } from './types';
+import type {
+  Board,
+  BoardList,
+  BoardSummary,
+  BoardView,
+  Card,
+  CardUpdate,
+  PersonalToken,
+  User,
+} from './types';
 
 export const authApi = {
   async register(input: { name: string; email: string; password: string; acceptTerms: boolean }) {
@@ -47,6 +56,13 @@ export const accountApi = {
     });
     setAccessToken(session.accessToken);
   },
+  listTokens: () => request<{ tokens: PersonalToken[] }>('/v1/me/tokens').then((r) => r.tokens),
+  createToken: (input: { name: string; expiresInDays: number }) =>
+    request<{ token: PersonalToken; secret: string }>('/v1/me/tokens', {
+      method: 'POST',
+      body: input,
+    }),
+  revokeToken: (id: string) => request<void>(`/v1/me/tokens/${id}`, { method: 'DELETE' }),
   exportData: () => request<unknown>('/v1/me/export'),
   async deleteAccount(password: string) {
     await request<void>('/v1/me', { method: 'DELETE', body: { password } });

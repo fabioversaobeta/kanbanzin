@@ -1,5 +1,7 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { accountApi } from '../../api/endpoints';
+import { API_URL } from '../../api/http';
+import type { PersonalToken } from '../../api/types';
 import { errorMessage, m } from '../../i18n/messages';
 import { Field } from '../../ui/Field';
 import { AppBackground, LegalLinks } from '../../ui/layout';
@@ -109,6 +111,142 @@ function PasswordSection() {
   );
 }
 
+const TOKEN_EXPIRY_OPTIONS = [30, 90, 365];
+
+export function TokensSection() {
+  const [tokens, setTokens] = useState<PersonalToken[]>([]);
+  const [name, setName] = useState('');
+  const [days, setDays] = useState(90);
+  const [created, setCreated] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [feedback, setFeedback] = useState<Feedback>(null);
+
+  useEffect(() => {
+    accountApi
+      .listTokens()
+      .then(setTokens)
+      .catch((error: unknown) => setFeedback({ kind: 'error', text: errorMessage(error) }));
+  }, []);
+
+  const create = async (event: FormEvent) => {
+    event.preventDefault();
+    try {
+      const { token, secret } = await accountApi.createToken({ name, expiresInDays: days });
+      setTokens((current) => [token, ...current]);
+      setCreated(secret);
+      setCopied(false);
+      setName('');
+      setFeedback({ kind: 'success', text: m.account.tokenCreated });
+    } catch (error) {
+      setFeedback({ kind: 'error', text: errorMessage(error) });
+    }
+  };
+
+  const revoke = async (id: string) => {
+    try {
+      await accountApi.revokeToken(id);
+      setTokens((current) => current.filter((token) => token.id !== id));
+    } catch (error) {
+      setFeedback({ kind: 'error', text: errorMessage(error) });
+    }
+  };
+
+  const command = created
+    ? `claude mcp add --transport http kanbanzin ${API_URL}/mcp --header "Authorization: Bearer ${created}"`
+    : '';
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(command);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  const formatDate = (iso: string) => new Date(iso).toLocaleDateString('pt-BR');
+
+  return (
+    <section className="glass card-panel">
+      <h2>{m.account.tokensSection}</h2>
+      <p style={{ color: 'var(--text-soft)' }}>{m.account.tokensText}</p>
+      <form className="form" onSubmit={(event) => void create(event)}>
+        <FeedbackAlert feedback={feedback} />
+        <Field
+          label={m.account.tokenName}
+          hint={m.account.tokenNameHint}
+          required
+          maxLength={80}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <div className="field">
+          <label htmlFor="token-expiry">{m.account.tokenExpiry}</label>
+          <select
+            id="token-expiry"
+            className="input"
+            value={days}
+            onChange={(e) => setDays(Number(e.target.value))}
+          >
+            {TOKEN_EXPIRY_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {m.account.tokenDays(option)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <button type="submit" className="btn btn-primary" disabled={!name.trim()}>
+            {m.account.tokenCreate}
+          </button>
+        </div>
+      </form>
+
+      {created ? (
+        <div className="stack" style={{ marginTop: 16 }}>
+          <p style={{ margin: 0 }}>{m.account.tokenCommand}</p>
+          <code
+            style={{ display: 'block', overflowWrap: 'anywhere', userSelect: 'all' }}
+            data-testid="token-command"
+          >
+            {command}
+          </code>
+          <div>
+            <button type="button" className="btn btn-small" onClick={() => void copy()}>
+              {copied ? m.account.tokenCopied : m.account.tokenCopy}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      <ul className="stack" style={{ listStyle: 'none', padding: 0, margin: '16px 0 0' }}>
+        {tokens.length === 0 ? (
+          <li style={{ color: 'var(--text-soft)' }}>{m.account.tokenNone}</li>
+        ) : null}
+        {tokens.map((token) => (
+          <li key={token.id} className="row" style={{ justifyContent: 'space-between' }}>
+            <span>
+              <strong>{token.name}</strong> <code>{token.prefix}…</code>
+              <br />
+              <small style={{ color: 'var(--text-soft)' }}>
+                {m.account.tokenExpires} {formatDate(token.expiresAt)} · {m.account.tokenLastUsed}{' '}
+                {token.lastUsedAt ? formatDate(token.lastUsedAt) : m.account.tokenNeverUsed}
+              </small>
+            </span>
+            <button
+              type="button"
+              className="btn btn-small btn-danger"
+              onClick={() => void revoke(token.id)}
+            >
+              {m.account.tokenRevoke}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function PrivacySection() {
   const { setUser } = useAuth();
   const [password, setPassword] = useState('');
@@ -182,6 +320,7 @@ export function AccountPage() {
         <div className="stack">
           <ProfileSection />
           <PasswordSection />
+          <TokensSection />
           <PrivacySection />
         </div>
         <div style={{ marginTop: 40 }}>
