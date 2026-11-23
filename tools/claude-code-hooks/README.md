@@ -69,5 +69,5 @@ own Kanbanzin API. Avoid pasting secrets into the first line of a prompt, or tur
 ## Tests
 
 ```powershell
-node --test tools/claude-code-hooks/
+node --test "tools/claude-code-hooks/*.test.mjs"
 ```
