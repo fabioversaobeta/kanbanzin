@@ -52,6 +52,13 @@ import {
   DrizzleCardRepository,
   DrizzleListRepository,
 } from './modules/boards/infrastructure/drizzle-board-repositories';
+import {
+  AuthenticatePersonalToken,
+  CreatePersonalToken,
+  ListPersonalTokens,
+  RevokePersonalToken,
+} from './modules/access-tokens/application/personal-token-use-cases';
+import { DrizzlePersonalTokenRepository } from './modules/access-tokens/infrastructure/drizzle-personal-token-repository';
 import { ExportUserData } from './modules/privacy/application/export-user-data';
 import {
   ListSuperpowerCatalog,
@@ -94,6 +101,7 @@ export function createContainer({
   const lists = new DrizzleListRepository(db);
   const cards = new DrizzleCardRepository(db);
   const superpowers = new DrizzleSuperpowerRepository(db);
+  const personalTokens = new DrizzlePersonalTokenRepository(db);
 
   return {
     db,
@@ -140,6 +148,12 @@ export function createContainer({
       updateCard: new UpdateCard(cards, superpowers, clock),
       moveCard: new MoveCard(lists, cards, clock),
       deleteCard: new DeleteCard(cards),
+    },
+    personalTokens: {
+      create: new CreatePersonalToken(personalTokens, tokenGenerator, clock),
+      list: new ListPersonalTokens(personalTokens, clock),
+      revoke: new RevokePersonalToken(personalTokens, clock),
+      authenticate: new AuthenticatePersonalToken(personalTokens, tokenGenerator, clock),
     },
     superpowers: {
       catalog: new ListSuperpowerCatalog(),

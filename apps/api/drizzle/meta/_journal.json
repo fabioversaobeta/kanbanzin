@@ -15,6 +15,13 @@
       "when": 1793286426611,
       "tag": "0001_card_archive",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795404913496,
+      "tag": "0002_personal_access_tokens",
+      "breakpoints": true
     }
   ]
 }
