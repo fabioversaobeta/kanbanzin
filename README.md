@@ -11,6 +11,10 @@ to deploy on Railway (API) and Vercel (web).
 > File uploads are intentionally **not** supported: no storage costs, no copyright or illegal
 > content hosting risk, a smaller attack surface.
 
+<p align="center">
+  <img src="docs/images/board.png" alt="Kanbanzin board with Liquid Glass UI, color labels and due dates" width="900" />
+</p>
+
 ## Features
 
 - **Boards, lists and cards** with smooth drag and drop (mouse, touch and keyboard), optimistic UI
