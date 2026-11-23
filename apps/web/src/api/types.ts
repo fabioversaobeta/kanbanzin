@@ -53,3 +53,12 @@ export interface CardUpdate {
   dueAt?: string | null;
   labels?: string[];
 }
+
+export interface PersonalToken {
+  id: string;
+  name: string;
+  prefix: string;
+  expiresAt: string;
+  lastUsedAt: string | null;
+  createdAt: string;
+}
