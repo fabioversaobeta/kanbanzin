@@ -21,6 +21,10 @@ const changePasswordBody = z.object({
   currentPassword: z.string().max(1024),
   newPassword: z.string().max(1024),
 });
+const createTokenBody = z.object({
+  name: z.string().max(200),
+  expiresInDays: z.number().int().min(1).max(365).optional(),
+});
 const deleteAccountBody = z.object({ password: z.string().max(1024) });
 
 interface AuthRoutesOptions {
@@ -31,7 +35,8 @@ interface AuthRoutesOptions {
 
 export function registerAuthRoutes(app: FastifyInstance, options: AuthRoutesOptions): void {
   const { container, secureCookies, limits } = options;
-  const authenticate = createAuthenticate(container);
+  // Account management is reserved for real sessions: personal access tokens are rejected here.
+  const authenticate = createAuthenticate(container, { sessionOnly: true });
 
   const writeSession = (reply: FastifyReply, session: SessionTokens) => {
     reply.setCookie(REFRESH_COOKIE, session.refreshToken, {
@@ -137,6 +142,30 @@ export function registerAuthRoutes(app: FastifyInstance, options: AuthRoutesOpti
       return reply.send(writeSession(reply, session));
     },
   );
+
+  app.get('/v1/me/tokens', { preHandler: authenticate }, async (request) => ({
+    tokens: await container.personalTokens.list.execute(request.userId),
+  }));
+
+  app.post(
+    '/v1/me/tokens',
+    {
+      preHandler: authenticate,
+      config: { rateLimit: { max: limits.passwordReset * 4, timeWindow: '1 hour' } },
+    },
+    async (request, reply) => {
+      const body = createTokenBody.parse(request.body);
+      const { token, secret } = await container.personalTokens.create.execute(request.userId, body);
+      reply.header('Cache-Control', 'no-store');
+      return reply.status(201).send({ token, secret });
+    },
+  );
+
+  app.delete('/v1/me/tokens/:id', { preHandler: authenticate }, async (request, reply) => {
+    const { id } = z.object({ id: z.uuid() }).parse(request.params);
+    await container.personalTokens.revoke.execute(request.userId, id);
+    return reply.status(204).send();
+  });
 
   app.get('/v1/me/export', { preHandler: authenticate }, async (request, reply) => {
     const data = await container.privacy.exportData.execute(request.userId);

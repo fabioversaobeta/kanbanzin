@@ -58,6 +58,25 @@ export const passwordResetTokens = pgTable(
   (t) => [index('password_reset_tokens_user_idx').on(t.userId)],
 );
 
+export const personalAccessTokens = pgTable(
+  'personal_access_tokens',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    /** Leading characters of the token, shown in the UI so users can tell tokens apart. */
+    tokenPrefix: text('token_prefix').notNull(),
+    tokenHash: text('token_hash').notNull().unique(),
+    expiresAt: timestamptz('expires_at').notNull(),
+    lastUsedAt: timestamptz('last_used_at'),
+    revokedAt: timestamptz('revoked_at'),
+    createdAt: timestamptz('created_at').notNull().defaultNow(),
+  },
+  (t) => [index('personal_access_tokens_user_idx').on(t.userId)],
+);
+
 export const boards = pgTable(
   'boards',
   {
